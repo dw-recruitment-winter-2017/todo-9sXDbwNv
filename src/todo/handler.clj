@@ -30,9 +30,15 @@
      :body insert-response})
 
   (POST "/update" request
-    (def update-response (t/update-todo (get-in request [:body])))
+    (def update-response (t/complete-todo (get-in request [:body])))
     {:status 200
      :body update-response})
+
+  ; need to generate a dynamic route for this
+  (DELETE "/todo/:id" [id]
+    (def delete-response (t/delete-todo id))
+    {:status 200
+     :body delete-response})
 
   (route/not-found {:message "Not Found"}))
 

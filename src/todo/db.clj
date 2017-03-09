@@ -1,14 +1,14 @@
 (ns todo.db
-  (:require [clojure.java.jdbc :as sql])
-  (:use korma.db)
-  (:use korma.core))
+  (:require [clojure.java.jdbc :as sql]
+            [korma.core :refer :all :rename {update sql-update}]
+            [korma.db :as db]))
 
-(defdb db (postgres {:db "dw_todo"
+(db/defdb pgdb (db/postgres {:db "dw_todo"
                      :user "dw_todo"}))
 
 (defentity dw_todo
   (table :dw_todo)
-  (entity-fields :description :completed))
+  (entity-fields :id :description :completed))
 
 (defn all-todos []
   (select dw_todo))
@@ -17,7 +17,18 @@
   (insert dw_todo
         (values todo)))
 
-(defn update-todo [todo]
-  (update dw_todo
-    (set-fields (dissoc dw_todo :id))
-    (where {:id (dw_todo :id)})))
+(defn complete-todo [todo]
+  (sql-update dw_todo
+    (set-fields {:completed true})
+    (where {:id (get todo :id)})))
+
+(defn delete-todo [todo-id]
+  (delete dw_todo
+    (where {:id todo-id})))
+
+(defn delete-all []
+  (delete dw_todo))
+
+(defn select-one []
+  (select dw_todo
+    (limit 1)))
