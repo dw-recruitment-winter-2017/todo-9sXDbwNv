@@ -1,0 +1,6 @@
+CREATE TABLE dw_todo(
+    id SERIAL PRIMARY KEY,
+    description VARCHAR (100) NOT NULL,
+    completed BOOLEAN DEFAULT FALSE,
+    created_on TIMESTAMP NOT NULL DEFAULT NOW()
+);
