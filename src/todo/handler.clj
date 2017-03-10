@@ -18,7 +18,7 @@
   (GET "/" []
     (def todos (t/all-todos))
     {:status 200
-     :body todos})
+     :body (if (empty? todos) ["You have no todos!"] todos )})
   
   (GET "/about" [] "About page")
 
@@ -27,9 +27,9 @@
     {:status 200
       :body (str "The user id is " id)})
 
-  ; maybe make these one endpoint and have logic in
-  ; db code to insert or update depending on if todo
-  ; exists in the db or not
+  ; TODO: consider make these one endpoint and have logic in
+  ; db code to insert or update depending on if todo already
+  ; exists in the db
   (POST "/todo" request
     (def insert-response (t/insert-todo (get-in request [:body])))
     {:status 200

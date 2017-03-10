@@ -13,7 +13,7 @@
   (testing "main route"
     (let [response (app (mock/request :get "/"))]
       (is (= (:status response) 200))
-      (is (= (:body response) "[]"))))
+      (is (= (:body response) "[\"You have no todos!\"]"))))
   
   (testing "about route"
     (let [response (app (mock/request :get "/about"))]

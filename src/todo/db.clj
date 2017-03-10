@@ -21,7 +21,7 @@
   (insert dw_todo
         (values todo)))
 
-; Potentially make this a generic update by key, value 
+; TODO: make this a generic update by key, value 
 (defn complete-todo [todo]
   (sql-update dw_todo
     (set-fields {:completed true})
