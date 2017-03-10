@@ -1,9 +1,13 @@
 (ns todo.db
   (:require [clojure.java.jdbc :as sql]
             [korma.core :refer :all :rename {update sql-update}]
-            [korma.db :as db]))
+            [korma.db :as db]
+            [clojure.tools.logging :as log]
+            [environ.core :refer [env]]))
 
-(db/defdb pgdb (db/postgres {:db "dw_todo"
+(def db-name (env :database-url))
+
+(db/defdb pgdb (db/postgres {:db db-name
                      :user "dw_todo"}))
 
 (defentity dw_todo
@@ -17,18 +21,17 @@
   (insert dw_todo
         (values todo)))
 
+; Potentially make this a generic update by key, value 
 (defn complete-todo [todo]
   (sql-update dw_todo
     (set-fields {:completed true})
     (where {:id (get todo :id)})))
 
+; TODO: return errors to the route handler and
+; display on front end
 (defn delete-todo [todo-id]
-  (delete dw_todo
-    (where {:id todo-id})))
-
-(defn delete-all []
-  (delete dw_todo))
-
-(defn select-one []
-  (select dw_todo
-    (limit 1)))
+  (log/info "In delete-todo, id is " todo-id)
+  (try
+    (delete dw_todo
+      (where {:id todo-id}))
+  (catch Exception e (log/error (str "Error saving data to db: " (.getMessage e))))))

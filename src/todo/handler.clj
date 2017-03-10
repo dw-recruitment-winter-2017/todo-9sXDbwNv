@@ -1,6 +1,7 @@
 (ns todo.handler
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
+            [compojure.coercions :refer :all]
             [ring.middleware.defaults :refer :all]
             [ring.middleware.json :as middleware]
             [clojure.tools.logging :as log]
@@ -21,10 +22,15 @@
   
   (GET "/about" [] "About page")
 
+  (GET "/test/:id" [id]
+    (log/info "In test route")
+    {:status 200
+      :body (str "The user id is " id)})
+
   ; maybe make these one endpoint and have logic in
   ; db code to insert or update depending on if todo
   ; exists in the db or not
-  (POST "/new" request
+  (POST "/todo" request
     (def insert-response (t/insert-todo (get-in request [:body])))
     {:status 200
      :body insert-response})
@@ -34,11 +40,12 @@
     {:status 200
      :body update-response})
 
-  ; need to generate a dynamic route for this
-  (DELETE "/todo/:id" [id]
+  (DELETE "/todo/:id" [id :<< as-int]
+    ; (log/info (str "In DELETE route, id is " id "and type is " (type id))))
     (def delete-response (t/delete-todo id))
+    (log/info delete-response)
     {:status 200
-     :body delete-response})
+     :body "deleted"})
 
   (route/not-found {:message "Not Found"}))
 

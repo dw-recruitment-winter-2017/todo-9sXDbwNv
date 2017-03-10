@@ -5,15 +5,9 @@
             [todo.handler :refer :all]
             [todo.db :as t]))
 
-(def test-todo {:description "This is a test TODO item"})
-(def update-todo {:id 1 :description "This description has been updated" :completed false})
-
+(def test-todo {:id 5000 :description "This is a sample TODO item" :completed false})
 ; Function to delete all data from the table to ensure
 ; test data is cleaned up
-(defn clear-db []
-  (t/delete-all))
-
-(clear-db)
 
 (deftest test-app
   (testing "main route"
@@ -28,7 +22,14 @@
 
   (testing "not-found route"
     (let [response (app (mock/request :get "/invalid"))]
-      (is (= (:status response) 404)))))
+      (is (= (:status response) 404))))
+
+  (testing "test route"
+    (let [response
+          (app
+            (mock/request :get "/test/1"))]
+          (is (= (:status response) 200))
+          (is (= (:body response) "The user id is 1")))))
 
 (deftest test-post
   (testing "create new todo"
@@ -36,43 +37,37 @@
           (app 
             (mock/content-type
               (mock/body
-                (mock/request :post "/new")
+                (mock/request :post "/todo")
                 (json/write-str test-todo))
               "application/json"))]
       (is (= (:status response) 200))))
 
   (testing "mark todo complete"
-    (def existing-todo (first (t/select-one)))
     (let [response 
           (app 
             (mock/content-type 
               (mock/body
                 (mock/request :post "/update")
-                (json/write-str (update existing-todo :completed not))) ;flips boolean false to true and updates the db
+                (json/write-str (update test-todo :completed not))) ;flips boolean false to true and updates the db
               "application/json"))]
       (is (= (:status response) 200))
       (is (= (:body response) 1))))
 
   (testing "mark todo incomplete"
-    (def existing-todo (first (t/select-one)))
     (let [response 
           (app 
             (mock/content-type 
               (mock/body
                 (mock/request :post "/update")
-                (json/write-str (update existing-todo :completed not))) ;flips boolean false to true and updates the db
+                (json/write-str (update test-todo :completed not))) ;flips boolean false to true and updates the db
               "application/json"))]
       (is (= (:status response) 200))
-      (is (= (:body response) 1)))))
+      (is (= (:body response) 1))))
 
-  ; (testing "delete todo"
-  ;   (def existing-todo (first (t/select-one)))
-  ;   (let [response 
-  ;         (app 
-  ;           (mock/content-type 
-  ;             (mock/body
-  ;               (mock/request :delete "/delete")
-  ;               (json/write-str (update existing-todo :completed not))) ;flips boolean false to true and updates the db
-  ;             "application/json"))]
-  ;     (is (= (:status response) 200))
-  ;     (is (= (:body response) 1)))))
+  (testing "delete todo"
+    (def delete-url (str "/todo/" (get test-todo :id)))
+    (let [response 
+          (app 
+            (mock/request :delete delete-url))]
+      (is (= (:status response) 200))
+      (is (= (:body response) "deleted")))))
